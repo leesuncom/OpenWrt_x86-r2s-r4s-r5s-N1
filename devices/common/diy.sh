@@ -60,6 +60,9 @@ curl -sfL https://raw.githubusercontent.com/coolsnowwolf/lede/master/target/linu
 sed -i "s/CONFIG_WERROR=y/CONFIG_WERROR=n/" target/linux/generic/config-5.15
 
 curl -sfL https://github.com/sbwml/luci-app-mosdns/raw/v5/luci-app-mosdns/root/etc/hotplug.d/iface/99-mosdns -o feeds/kiddin9/luci-app-mosdns/root/etc/hotplug.d/iface/99-mosdns
+curl -sfL https://github.com/leesuncom/smartdns/raw/23.05/Makefile -o feeds/kiddin9/smartdns/Makefile
+curl -sfL https://github.com/leesuncom/smartdns/raw/23.05/conf/* -o feeds/kiddin9/smartdns/conf/
+
 grep -q "23.05" include/version.mk && [ -d package/kernel/mt76 ] && {
 mkdir package/kernel/mt76/patches
 curl -sfL https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/package/kernel/mt76/patches/0001-mt76-allow-VHT-rate-on-2.4GHz.patch -o package/kernel/mt76/patches/0001-mt76-allow-VHT-rate-on-2.4GHz.patch
