@@ -100,16 +100,16 @@ jobs:
           fi
         fi
 
-    - name: Trigger Packages Update
-      continue-on-error: true
-      run: |
-        status=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }} -s "https://api.github.com/repos/kiddin9/openwrt-packages/actions/runs" | jq -r '.workflow_runs[0].status')
-        if [[ "$status" == "completed" ]]; then
-          curl -X POST https://api.github.com/repos/kiddin9/openwrt-packages/dispatches \
-            -H "Accept: application/vnd.github.everest-preview+json" \
-            -H "Authorization: token ${{ secrets.REPO_TOKEN }}" \
-          --data '{"event_type": "update"}'
-        fi
+    # - name: Trigger Packages Update
+    #   continue-on-error: true
+    #   run: |
+    #     status=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }} -s "https://api.github.com/repos/kiddin9/openwrt-packages/actions/runs" | jq -r '.workflow_runs[0].status')
+    #     if [[ "$status" == "completed" ]]; then
+    #       curl -X POST https://api.github.com/repos/kiddin9/openwrt-packages/dispatches \
+    #         -H "Accept: application/vnd.github.everest-preview+json" \
+    #         -H "Authorization: token ${{ secrets.REPO_TOKEN }}" \
+    #       --data '{"event_type": "update"}'
+    #     fi
 
     - name: Initialization environment
       env:
@@ -321,7 +321,7 @@ jobs:
       continue-on-error: true
       if: env.SCKEY
       run: |
-        # [ steps.compile.outputs.status == 'success' ] && curl https://sctapi.ftqq.com/${{ secrets.SCKEY }}.send?text=🎉OpenWrt_${{ env.VERSION }}_${{matrix.target}}编译完成😋|| curl https://sctapi.ftqq.com/${{ secrets.SCKEY }}.send?text=❌OpenWrt_${{ env.VERSION }}_${{matrix.target}}编译失败😂
+        [ steps.compile.outputs.status == 'success' ] && curl https://sctapi.ftqq.com/${{ secrets.SCKEY }}.send?text=🎉OpenWrt_${{ env.VERSION }}_${{matrix.target}}编译完成😋|| curl https://sctapi.ftqq.com/${{ secrets.SCKEY }}.send?text=❌OpenWrt_${{ env.VERSION }}_${{matrix.target}}编译失败😂
 
     - name: Telegram notification
       if: env.TELEGRAM_TOKEN && ! contains(github.event.action, 'notg')
