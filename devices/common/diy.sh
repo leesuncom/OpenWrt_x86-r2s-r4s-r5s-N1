@@ -28,8 +28,8 @@ sed -i '/	refresh_config();/d' scripts/feeds
 ./scripts/feeds install -a -p kiddin9 -f
 ./scripts/feeds install -a
 
-# echo "$(date +"%s")" >version.date
-echo "$(TZ=UTC-8 date +"%Y.%m.%d-%H%M")" >version.date
+echo "$(date +"%s")" >version.date
+# echo "$(TZ=UTC-8 date +"%Y.%m.%d-%H%M")" >version.date
 sed -i '/$(curdir)\/compile:/c\$(curdir)/compile: package/opkg/host/compile' package/Makefile
 sed -i 's/$(TARGET_DIR)) install/$(TARGET_DIR)) install --force-overwrite --force-depends/' package/Makefile
 sed -i "s/DEFAULT_PACKAGES:=/DEFAULT_PACKAGES:=luci-app-firewall luci-app-opkg luci-app-upnp luci-app-autoreboot \
@@ -59,7 +59,7 @@ git_clone_path master https://github.com/coolsnowwolf/lede target/linux/generic/
 curl -sfL https://raw.githubusercontent.com/coolsnowwolf/lede/master/target/linux/generic/pending-5.15/613-netfilter_optional_tcp_window_check.patch -o target/linux/generic/pending-5.15/613-netfilter_optional_tcp_window_check.patch
 sed -i "s/CONFIG_WERROR=y/CONFIG_WERROR=n/" target/linux/generic/config-5.15
 
-curl -sfL https://github.com/sbwml/luci-app-mosdns/raw/v5/luci-app-mosdns/root/etc/hotplug.d/iface/99-mosdns -o feeds/kiddin9/luci-app-mosdns/root/etc/hotplug.d/iface/99-mosdns
+# curl -sfL https://github.com/sbwml/luci-app-mosdns/raw/v5/luci-app-mosdns/root/etc/hotplug.d/iface/99-mosdns -o feeds/kiddin9/luci-app-mosdns/root/etc/hotplug.d/iface/99-mosdns
 grep -q "23.05" include/version.mk && [ -d package/kernel/mt76 ] && {
 mkdir package/kernel/mt76/patches
 curl -sfL https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/package/kernel/mt76/patches/0001-mt76-allow-VHT-rate-on-2.4GHz.patch -o package/kernel/mt76/patches/0001-mt76-allow-VHT-rate-on-2.4GHz.patch
@@ -88,7 +88,7 @@ sed -i "s/tty\(0\|1\)::askfirst/tty\1::respawn/g" target/linux/*/base-files/etc/
 
 sed -i '/echo "radio_config_id=${radio_md5sum}" >> $hostapd_conf_file/d' package/kernel/mac80211/files/lib/netifd/wireless/mac80211.sh
 
-date=`TZ=UTC-8 date +%Y.%m.%d-%H%M`
+date=`date +%m.%d.%Y`
 sed -i -e "/\(# \)\?REVISION:=/c\REVISION:=$date" -e '/VERSION_CODE:=/c\VERSION_CODE:=$(REVISION)' include/version.mk
 
 sed -i \
