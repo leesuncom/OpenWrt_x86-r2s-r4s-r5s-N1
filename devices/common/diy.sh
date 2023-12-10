@@ -60,8 +60,11 @@ curl -sfL https://raw.githubusercontent.com/coolsnowwolf/lede/master/target/linu
 sed -i "s/CONFIG_WERROR=y/CONFIG_WERROR=n/" target/linux/generic/config-5.15
 
 curl -sfL https://github.com/sbwml/luci-app-mosdns/raw/v5/luci-app-mosdns/root/etc/hotplug.d/iface/99-mosdns -o feeds/kiddin9/luci-app-mosdns/root/etc/hotplug.d/iface/99-mosdns
-curl -sfL https://github.com/leesuncom/smartdns/raw/23.05/Makefile -o feeds/kiddin9/smartdns/Makefile
-curl -sfL https://github.com/leesuncom/smartdns/raw/23.05/conf/* -o feeds/kiddin9/smartdns/conf/
+# curl -sfL https://github.com/leesuncom/smartdns/raw/23.05/Makefile -o feeds/kiddin9/smartdns/Makefile
+# curl -sfL https://github.com/leesuncom/smartdns/raw/23.05/conf/* -o feeds/kiddin9/smartdns/conf/
+# rm -rf package/feeds/kiddin9/smartdns
+rm -rf feeds/kiddin9/smartdns
+git clone -b 23.05 https://github.com/leesuncom/smartdns.git feeds/kiddin9/smartdns
 
 grep -q "23.05" include/version.mk && [ -d package/kernel/mt76 ] && {
 mkdir package/kernel/mt76/patches
