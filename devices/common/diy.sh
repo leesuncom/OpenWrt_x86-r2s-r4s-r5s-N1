@@ -65,7 +65,7 @@ git clone -b 23.05 https://github.com/leesuncom/smartdns.git feeds/kiddin9/smart
 sed -i "154i uci set network.lan.gateway=192.168.1.1" feeds/kiddin9/my-default-settings/files/etc/uci-defaults/99-default-settings
 sed -i "155i uci set network.lan.dns=127.0.0.1" feeds/kiddin9/my-default-settings/files/etc/uci-defaults/99-default-settings
 sed -i 's/OpenWrt/NeoBird/g' feeds/kiddin9/my-default-settings/files/etc/uci-defaults/99-default-settings
-sed -i 's/^IMG_PREFIX\:\=.*/IMG_PREFIX:=$(VERSION_DIST_SANITIZED)-$(date +"%Y.%m.%d-%H%M")-$(IMG_PREFIX_VERNUM)$(IMG_PREFIX_VERCODE)$(IMG_PREFIX_EXTRA)$(BOARD)$(if $(SUBTARGET),-$(SUBTARGET))/g' include/image.mk
+# sed -i 's/^IMG_PREFIX\:\=.*/IMG_PREFIX:=$(VERSION_DIST_SANITIZED)-$(date +"%Y.%m.%d-%H%M")-$(IMG_PREFIX_VERNUM)$(IMG_PREFIX_VERCODE)$(IMG_PREFIX_EXTRA)$(BOARD)$(if $(SUBTARGET),-$(SUBTARGET))/g' include/image.mk
 
 
 grep -q "23.05" include/version.mk && [ -d package/kernel/mt76 ] && {
