@@ -66,7 +66,8 @@ curl -sfL https://github.com/leesuncom/package/raw/main/99-default-settings -o f
 # sed -i "s/OpenWrt/NeoBird/g" feeds/kiddin9/my-default-settings/files/etc/uci-defaults/99-default-settings
 # sed -i "154i uci set network.lan.gateway=192.168.1.1" feeds/kiddin9/my-default-settings/files/etc/uci-defaults/99-default-settings
 # sed -i "155i uci set network.lan.dns=127.0.0.1" feeds/kiddin9/my-default-settings/files/etc/uci-defaults/99-default-settings
-sed -i "s/^IMG_PREFIX\:\=.*/IMG_PREFIX:=$(VERSION_DIST_SANITIZED)-$(date +"%Y.%m.%d-%H%M")-$(IMG_PREFIX_VERNUM)$(IMG_PREFIX_VERCODE)$(IMG_PREFIX_EXTRA)$(BOARD)$(if $(SUBTARGET),-$(SUBTARGET))/g" include/image.mk
+sed -i 's/^IMG_PREFIX\:\=.*/IMG_PREFIX:=$(VERSION_DIST_SANITIZED)-$(shell TZ=UTC-8 date +"%Y.%m.%d-%H%M")-$(IMG_PREFIX_VERNUM)$(IMG_PREFIX_VERCODE)$(IMG_PREFIX_EXTRA)$(BOARD)$(if $(SUBTARGET),-$(SUBTARGET))/g' include/image.mk
+sed -i 's/OpenWrt/NeoBird/g' package/base-files/files/bin/config_generate
 
 grep -q "23.05" include/version.mk && [ -d package/kernel/mt76 ] && {
 mkdir package/kernel/mt76/patches
