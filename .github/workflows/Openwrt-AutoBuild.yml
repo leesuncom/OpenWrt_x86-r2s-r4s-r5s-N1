@@ -258,7 +258,6 @@ jobs:
         rename -v "s/openwrt-/${{ env.VERSION }}-openwrt-/" ./firmware/*/* || true
         Emoji=("🎉" "🤞" "✨" "🎁" "🎈" "🎄" "🎨" "💋" "🍓" "🍕" "🍉" "💐" "🌴" "🚀" "🛸" "🗽" "⛅" "🌈" "🔥" "⛄" "🐶" "🏅" "🦄" "🐤")
         echo "EMOJI=${Emoji[$[$RANDOM % ${#Emoji[@]}]]}" >> $GITHUB_ENV
-        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         if [ ${{matrix.target}} == "x86_64" ]; then
         echo "DOCKERTAG=${{ secrets.DOCKER_ID }}/openwrt-nginx:latest" >> $GITHUB_ENV
         echo "NOTICE=请分配不少于1G的存储容量" >> $GITHUB_ENV
@@ -282,7 +281,8 @@ jobs:
       if: env.UPLOAD_FIRMWARE_FOR_ARTIFACT == 'true'
       with:
         name: ${{ env.VERSION }}_${{matrix.target}}
-        path: ${{ env.FIRMWARE }}
+        path: |
+          openwrt/bin/targets/
 
     - name: Create release
       id: create_release
@@ -303,7 +303,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
       with:
-        files: "${{ env.FIRMWARE }}/*"
+        files: ${{ env.FIRMWARE }}/*
         name: ${{ env.date2 }} ${{matrix.target}} ${{ env.EMOJI }}
         tag_name: ${{ env.date }}_${{matrix.target}}
         body_path: release.txt
