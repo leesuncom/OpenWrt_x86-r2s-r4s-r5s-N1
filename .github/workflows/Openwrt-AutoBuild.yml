@@ -12,7 +12,7 @@ on:
   repository_dispatch:
 
 env:
-  REPO_TOKEN: ${{ secrets.TOKEN_KIDDIN9 }}
+  REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
   PPPOE_USERNAME: ${{ secrets.PPPOE_USERNAME }}
   PPPOE_PASSWD: ${{ secrets.PPPOE_PASSWD }}
   SCKEY: ${{ secrets.SCKEY }}
@@ -61,7 +61,7 @@ jobs:
         echo "UPLOAD_FIRMWARE_FOR_RELEASE=${UPLOAD_FIRMWARE_FOR_RELEASE}" >> $GITHUB_ENV
         echo "UPLOAD_FIRMWARE_TO_COWTRANSFER=${UPLOAD_FIRMWARE_TO_COWTRANSFER}" >> $GITHUB_ENV
         echo "UPLOAD_FIRMWARE_TO_WETRANSFER=${UPLOAD_FIRMWARE_TO_WETRANSFER}" >> $GITHUB_ENV
-        sed -i "1a REPO_TOKEN=${{ secrets.TOKEN_KIDDIN9 }}" ${GITHUB_WORKSPACE}/devices/common/diy.sh
+        sed -i "1a REPO_TOKEN=${{ secrets.REPO_TOKEN }}" ${GITHUB_WORKSPACE}/devices/common/diy.sh
         sed -i "1a TARGET=${{matrix.target}}" ${GITHUB_WORKSPACE}/devices/common/diy.sh
         if [ ${{matrix.target}} == "x86_64" ]; then
             echo "ARCH=linux/amd64" >> $GITHUB_ENV
@@ -99,18 +99,7 @@ jobs:
             echo "MTARGET=aarch64_generic" >> $GITHUB_ENV
           fi
         fi
-
-    - name: Trigger Packages Update
-      continue-on-error: true
-      run: |
-        status=$(curl -H "Authorization: token ${{ secrets.TOKEN_KIDDIN9 }} -s "https://api.github.com/repos/kiddin9/openwrt-packages/actions/runs" | jq -r '.workflow_runs[0].status')
-        if [[ "$status" == "completed" ]]; then
-          curl -X POST https://api.github.com/repos/kiddin9/openwrt-packages/dispatches \
-            -H "Accept: application/vnd.github.everest-preview+json" \
-            -H "Authorization: token ${{ secrets.TOKEN_KIDDIN9 }}" \
-          --data '{"event_type": "update"}'
-        fi
-
+    
     - name: Initialization environment
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -127,19 +116,19 @@ jobs:
         sudo timedatectl set-timezone "$TZ"
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"
-
+        
     - name: Get current date
       id: date
       run: |
-        echo "date=$(date +'%m/%d_%Y_%H/%M')" >> $GITHUB_ENV
-        echo "date2=$(date +'%m/%d %Y')" >> $GITHUB_ENV
+        echo "date=$(date +'%m.%d_%Y_%H%M')" >> $GITHUB_ENV
+        echo "date2=$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_ENV
         VERSION="$(echo "${{github.event.action}}" | grep -Eo " [0-9.]+" | sed -e 's/ //')" || true
-        [ "$VERSION" ] && echo "VERSION=$VERSION" >> $GITHUB_ENV || echo "VERSION=$(date +'%m.%d')" >> $GITHUB_ENV
-
+        [ "$VERSION" ] && echo "VERSION=$VERSION" >> $GITHUB_ENV || echo "VERSION=$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_ENV
+        
     - name: Clone source code
       run: |
         REPO_BRANCH="$((curl -gs -H 'Content-Type: application/json' \
-           -H "Authorization: Bearer ${{ secrets.TOKEN_KIDDIN9 }}" \
+           -H "Authorization: Bearer ${{ secrets.REPO_TOKEN }}" \
            -X POST -d '{ "query": "query {repository(owner: \"openwrt\", name: \"openwrt\") {refs(refPrefix: \"refs/tags/\", last: 4, orderBy: {field: TAG_COMMIT_DATE, direction: ASC}) {edges {node {name}}}}}"}' https://api.github.com/graphql) | jq -r '.data.repository.refs.edges[].node.name' | grep v23 | tail -n 1)"
         echo "CONFIG_VERSION_REPO=\"https://dl.openwrt.ai/`echo $REPO_BRANCH  | cut -d . -f 1,2 | sed -e 's/^v//'`\"">>devices/common/.config
         if [[ ! "${{ env.REPO_BRANCH }}" && "$REPO_URL" == "https://github.com/openwrt/openwrt" ]]; then
@@ -159,7 +148,7 @@ jobs:
         ln -sf /mnt/openwrt/dl openwrt/dl
         ln -sf /mnt/openwrt/bin openwrt/bin
         ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
-
+        
     - name: Load custom configuration
       run: |
         cp -rf devices/common/. openwrt/
@@ -179,7 +168,7 @@ jobs:
           echo "/bin/bash devices/${{matrix.target}}/$DIY_SH"
           /bin/bash "devices/${{matrix.target}}/$DIY_SH"
         fi
-
+        
     - name: Apply patches
       run: |
         cd openwrt
@@ -201,7 +190,7 @@ jobs:
         CONFIG_CRYPTO_CHACHA20POLY1305=y \
         CONFIG_FAT_DEFAULT_IOCHARSET="utf8" \
         ' `find target/linux -path "target/linux/*/config-*"`
-
+        
     - name: Defconfig
       run: |
         cd openwrt
@@ -212,14 +201,14 @@ jobs:
         make defconfig
         fi
         cat .config
-
+        
     - name: Download package
       id: package
       run: |
         cd openwrt
         make download -j$(($(nproc)+1)) &
         sleep 5
-
+        
     - name: Cache
       uses: stupidloud/cachewrtbuild@main
       with:
@@ -236,7 +225,7 @@ jobs:
             rm -rf staging_dir/!(*${{ env.MTARGET }}*|host|hostpkg) build_dir/!(*${{ env.MTARGET }}*|host|hostpkg)
         fi
         df -hT
-
+        
     - name: SSH connection to Actions
       uses: kiddin9/debugger-action@master
       if: contains(github.event.action, 'ssh')
@@ -252,7 +241,7 @@ jobs:
         rm -rf staging_dir/toolchain-*/bin/*openwrt-linux-musl-lto-dump
         rm -rf staging_dir/toolchain-*/initial
         df -hT
-
+        
     - name: Organize files
       id: organize
       continue-on-error: true
@@ -261,6 +250,7 @@ jobs:
         mkdir -p firmware/${{matrix.target}}
         cp -rf openwrt/bin/targets/*/*/*{combined,sysupgrade}* ./firmware/${{matrix.target}}/ || true
         cd openwrt/bin/targets/*/*/
+        rm -rf *.Linux-x86_64.tar.xz
         mv -f profiles.json profiles.json.b || true
         cp $GITHUB_WORKSPACE/openwrt/.config ${{matrix.target}}.config || true
         cp $GITHUB_WORKSPACE/openwrt/build_dir/target-*/linux-*/linux-*/.config ${{matrix.target}}_kernel.config || true
@@ -272,7 +262,7 @@ jobs:
         echo "DOCKERTAG=${{ secrets.DOCKER_ID }}/openwrt-nginx:latest" >> $GITHUB_ENV
         echo "NOTICE=请分配不少于1G的存储容量" >> $GITHUB_ENV
         fi
-
+        
     - name: Deploy imagebuilder to server
       uses: easingthemes/ssh-deploy@main
       continue-on-error: true
@@ -293,7 +283,7 @@ jobs:
         name: ${{ env.VERSION }}_${{matrix.target}}
         path: |
           openwrt/bin/targets/
-
+          
     - name: Create release
       id: create_release
       if: env.REPO_TOKEN && env.UPLOAD_FIRMWARE_FOR_RELEASE == 'true'
@@ -304,13 +294,13 @@ jobs:
         [ ${{ env.WETRANS }} ] && echo -e "[WeTransfer] (${{ env.WETRANS }} 🗽)\n" >> release.txt
         [ ${{ env.COWURL }} ] && echo -e "[奶牛上传] (${{ env.COWURL }} 🐮)\n" >> release.txt
         [ ${{ env.NOTICE }} ] && echo -e "${{ env.NOTICE }}" >> release.txt || true
-
+        
     - name: Upload firmware for release
       uses: softprops/action-gh-release@master
       continue-on-error: true
       if: env.REPO_TOKEN && env.UPLOAD_FIRMWARE_FOR_RELEASE == 'true'
       env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN_KIDDIN9 }}
+        GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
       with:
         files: "${{ env.FIRMWARE }}/*"
         name: ${{ env.date2 }} ${{matrix.target}} ${{ env.EMOJI }}
@@ -322,13 +312,13 @@ jobs:
       if: env.SCKEY
       run: |
         # [ steps.compile.outputs.status == 'success' ] && curl https://sctapi.ftqq.com/${{ secrets.SCKEY }}.send?text=🎉OpenWrt_${{ env.VERSION }}_${{matrix.target}}编译完成😋|| curl https://sctapi.ftqq.com/${{ secrets.SCKEY }}.send?text=❌OpenWrt_${{ env.VERSION }}_${{matrix.target}}编译失败😂
-
+   
     - name: Telegram notification
       if: env.TELEGRAM_TOKEN && ! contains(github.event.action, 'notg')
       continue-on-error: true
       run: |
         curl -k --data chat_id="${{ env.TELEGRAM_CHAT_ID }}" --data "text=🎉 OpenWrt ${{ env.VERSION }} ${{matrix.target}} 编译成功 😋  https://dl.openwrt.ai/firmware/${{matrix.target}}/  ${{ env.COWURL }}   ${{ env.WETRANS }} 🚀" "https://api.telegram.org/bot${{ env.TELEGRAM_TOKEN }}/sendMessage"
-
+  
     - name: Delete workflow runs
       uses: GitRML/delete-workflow-runs@main
       continue-on-error: true
@@ -344,4 +334,4 @@ jobs:
         keep_latest: 15
         delete_tags: true
       env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN_KIDDIN9 }}
+        GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
