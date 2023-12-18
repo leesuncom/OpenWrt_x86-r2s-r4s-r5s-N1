@@ -29,12 +29,11 @@ sed -i '/	refresh_config();/d' scripts/feeds
 ./scripts/feeds install -a
 
 echo "$(date +"%s")" >version.date
-# echo "$(TZ=UTC-8 date +"%Y.%m.%d-%H%M")" >version.date
 sed -i '/$(curdir)\/compile:/c\$(curdir)/compile: package/opkg/host/compile' package/Makefile
 sed -i 's/$(TARGET_DIR)) install/$(TARGET_DIR)) install --force-overwrite --force-depends/' package/Makefile
-sed -i "s/DEFAULT_PACKAGES:=/DEFAULT_PACKAGES:=luci-app-firewall luci-app-opkg luci-app-upnp luci-app-autoreboot \
-luci-base luci-compat luci-lib-ipkg luci-lib-fs \
-coremark wget-ssl curl autocore htop nano zram-swap kmod-lib-zstd kmod-tcp-bbr bash resolveip ds-lite swconfig luci-app-fan /" include/target.mk
+sed -i "s/DEFAULT_PACKAGES:=/DEFAULT_PACKAGES:=luci-app-advanced luci-app-firewall luci-app-gpsysupgrade luci-app-opkg luci-app-upnp luci-app-autoreboot \
+luci-app-wizard luci-base luci-compat luci-lib-ipkg luci-lib-fs \
+coremark wget-ssl curl autocore htop nano zram-swap kmod-lib-zstd kmod-tcp-bbr bash openssh-sftp-server block-mount resolveip ds-lite swconfig luci-app-fan /" include/target.mk
 sed -i "s/procd-ujail//" include/target.mk
 
 sed -i "s/^.*vermagic$/\techo '1' > \$(LINUX_DIR)\/.vermagic/" include/kernel-defaults.mk
@@ -50,21 +49,14 @@ done
 
 mv -f feeds/kiddin9/r81* tmp/
 
-sed -i "s/192.168.1.1/192.168.1.2/" package/feeds/kiddin9/base-files/files/bin/config_generate
-sed -i "s/192.168.1.1/192.168.1.2/" package/base-files/files/bin/config_generate
+sed -i "s/192.168.1/10.0.0/" package/feeds/kiddin9/base-files/files/bin/config_generate
+sed -i "s/192.168.1/10.0.0/" package/base-files/files/bin/config_generate
 
 #sed -i "/call Build\/check-size,\$\$(KERNEL_SIZE)/d" include/image.mk
 
 git_clone_path master https://github.com/coolsnowwolf/lede target/linux/generic/hack-5.15
 curl -sfL https://raw.githubusercontent.com/coolsnowwolf/lede/master/target/linux/generic/pending-5.15/613-netfilter_optional_tcp_window_check.patch -o target/linux/generic/pending-5.15/613-netfilter_optional_tcp_window_check.patch
 sed -i "s/CONFIG_WERROR=y/CONFIG_WERROR=n/" target/linux/generic/config-5.15
-
-# curl -sfL https://github.com/sbwml/luci-app-mosdns/raw/v5/luci-app-mosdns/root/etc/hotplug.d/iface/99-mosdns -o feeds/kiddin9/luci-app-mosdns/root/etc/hotplug.d/iface/99-mosdns
-# rm -rf feeds/kiddin9/smartdns
-# git clone -b 23.05 https://github.com/leesuncom/smartdns.git feeds/kiddin9/smartdns
-# curl -sfL https://github.com/leesuncom/package/raw/main/99-default-settings -o feeds/kiddin9/my-default-settings/files/etc/uci-defaults/99-default-settings
-# sed -i 's/^IMG_PREFIX\:\=.*/IMG_PREFIX:=$(VERSION_DIST_SANITIZED)-$(shell TZ=UTC-8 date +"%Y.%m.%d-%H%M")-$(IMG_PREFIX_VERNUM)$(IMG_PREFIX_VERCODE)$(IMG_PREFIX_EXTRA)$(BOARD)$(if $(SUBTARGET),-$(SUBTARGET))/g' include/image.mk
-# sed -i 's/OpenWrt/NeoBird/g' package/base-files/files/bin/config_generate
 
 grep -q "23.05" include/version.mk && [ -d package/kernel/mt76 ] && {
 mkdir package/kernel/mt76/patches
@@ -94,7 +86,7 @@ sed -i "s/tty\(0\|1\)::askfirst/tty\1::respawn/g" target/linux/*/base-files/etc/
 
 sed -i '/echo "radio_config_id=${radio_md5sum}" >> $hostapd_conf_file/d' package/kernel/mac80211/files/lib/netifd/wireless/mac80211.sh
 
-date=`date +%Y.%m.%d-%H%M`
+date=`date +%m.%d.%Y`
 sed -i -e "/\(# \)\?REVISION:=/c\REVISION:=$date" -e '/VERSION_CODE:=/c\VERSION_CODE:=$(REVISION)' include/version.mk
 
 sed -i \
