@@ -59,17 +59,17 @@ git_clone_path master https://github.com/coolsnowwolf/lede target/linux/generic/
 curl -sfL https://raw.githubusercontent.com/coolsnowwolf/lede/master/target/linux/generic/pending-5.15/613-netfilter_optional_tcp_window_check.patch -o target/linux/generic/pending-5.15/613-netfilter_optional_tcp_window_check.patch
 sed -i "s/CONFIG_WERROR=y/CONFIG_WERROR=n/" target/linux/generic/config-5.15
 
-curl -sfL https://github.com/sbwml/luci-app-mosdns/raw/v5/luci-app-mosdns/root/etc/hotplug.d/iface/99-mosdns -o feeds/kiddin9/luci-app-mosdns/root/etc/hotplug.d/iface/99-mosdns
-rm -rf feeds/kiddin9/smartdns
-git clone -b 23.05 https://github.com/leesuncom/smartdns.git feeds/kiddin9/smartdns
-curl -sfL https://github.com/leesuncom/package/raw/main/99-default-settings -o feeds/kiddin9/my-default-settings/files/etc/uci-defaults/99-default-settings
-sed -i 's/^IMG_PREFIX\:\=.*/IMG_PREFIX:=$(VERSION_DIST_SANITIZED)-$(shell TZ=UTC-8 date +"%Y.%m.%d-%H%M")-$(IMG_PREFIX_VERNUM)$(IMG_PREFIX_VERCODE)$(IMG_PREFIX_EXTRA)$(BOARD)$(if $(SUBTARGET),-$(SUBTARGET))/g' include/image.mk
-sed -i 's/OpenWrt/NeoBird/g' package/base-files/files/bin/config_generate
+# curl -sfL https://github.com/sbwml/luci-app-mosdns/raw/v5/luci-app-mosdns/root/etc/hotplug.d/iface/99-mosdns -o feeds/kiddin9/luci-app-mosdns/root/etc/hotplug.d/iface/99-mosdns
+# rm -rf feeds/kiddin9/smartdns
+# git clone -b 23.05 https://github.com/leesuncom/smartdns.git feeds/kiddin9/smartdns
+# curl -sfL https://github.com/leesuncom/package/raw/main/99-default-settings -o feeds/kiddin9/my-default-settings/files/etc/uci-defaults/99-default-settings
+# sed -i 's/^IMG_PREFIX\:\=.*/IMG_PREFIX:=$(VERSION_DIST_SANITIZED)-$(shell TZ=UTC-8 date +"%Y.%m.%d-%H%M")-$(IMG_PREFIX_VERNUM)$(IMG_PREFIX_VERCODE)$(IMG_PREFIX_EXTRA)$(BOARD)$(if $(SUBTARGET),-$(SUBTARGET))/g' include/image.mk
+# sed -i 's/OpenWrt/NeoBird/g' package/base-files/files/bin/config_generate
 
-# grep -q "23.05" include/version.mk && [ -d package/kernel/mt76 ] && {
-# mkdir package/kernel/mt76/patches
-# curl -sfL https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/package/kernel/mt76/patches/0001-mt76-allow-VHT-rate-on-2.4GHz.patch -o package/kernel/mt76/patches/0001-mt76-allow-VHT-rate-on-2.4GHz.patch
-# } || rm -rf devices/common/patches/mt7922.patch
+grep -q "23.05" include/version.mk && [ -d package/kernel/mt76 ] && {
+mkdir package/kernel/mt76/patches
+curl -sfL https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/package/kernel/mt76/patches/0001-mt76-allow-VHT-rate-on-2.4GHz.patch -o package/kernel/mt76/patches/0001-mt76-allow-VHT-rate-on-2.4GHz.patch
+} || rm -rf devices/common/patches/mt7922.patch
 
 grep -q "1.8.8" package/network/utils/iptables/Makefile && {
 rm -rf package/network/utils/iptables
