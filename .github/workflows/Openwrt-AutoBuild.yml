@@ -304,7 +304,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
       with:
-        files: "${{ env.FIRMWARE }}/*"
+        # files: "${{ env.FIRMWARE }}/*"
+        files: openwrt/bin/targets/*
         name: ${{ env.date2 }} ${{matrix.target}} ${{ env.EMOJI }}
         tag_name: ${{ env.date }}_${{matrix.target}}
         body_path: release.txt
