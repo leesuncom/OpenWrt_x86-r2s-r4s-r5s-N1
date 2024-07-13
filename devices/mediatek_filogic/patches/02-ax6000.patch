@@ -37,7 +37,7 @@ index 0000000000000..759baae3aeb18
 +
 +/ {
 +	model = "Xiaomi Redmi Router AX6000";
-+	compatible = "xiaomi,redmi-router-ax6000-ubootmod", "mediatek,mt7986a";
++	compatible = "xiaomi,redmi-router-ax6000", "mediatek,mt7986a";
 +};
 +
 +&spi_nand_flash {
